@@ -1,0 +1,83 @@
+import requests
+from typing import Dict, List, Any
+
+class RickAndMortyClient:
+    BASE_URL = "https://rickandmortyapi.com/api"
+
+    def get_random_character(self) -> Dict[str, Any]:
+        try:
+            response = requests.get(f"{self.BASE_URL}/character/random")
+            response.raise_for_status()  # Проверка на наличие ошибок
+            return response.json()
+        except requests.exceptions.RequestException as e:
+            print(f"Ошибка при запросе: {e}")
+            return {}
+
+    def search_characters(self, name: str) -> List[Dict[str, Any]]:
+        try:
+            response = requests.get(f"{self.BASE_URL}/character", params={"name": name})
+            response.raise_for_status()
+            return response.json().get("results", [])
+        except requests.exceptions.RequestException as e:
+            print(f"Ошибка при запросе: {e}")
+            return []
+
+    def get_all_locations(self) -> List[Dict[str, Any]]:
+        try:
+            response = requests.get(f"{self.BASE_URL}/location")
+            response.raise_for_status()
+            return response.json().get("results", [])
+        except requests.exceptions.RequestException as e:
+            print(f"Ошибка при запросе: {e}")
+            return []
+
+    def search_episodes(self, name: str) -> List[Dict[str, Any]]:
+        try:
+            response = requests.get(f"{self.BASE_URL}/episode", params={"name": name})
+            response.raise_for_status()
+            return response.json().get("results", [])
+        except requests.exceptions.RequestException as e:
+            print(f"Ошибка при запросе: {e}")
+            return []
+
+    def analyze_character_status(self) -> Dict[str, int]:
+        try:
+            response = requests.get(f"{self.BASE_URL}/character")
+            response.raise_for_status()
+            characters = response.json().get("results", [])
+            status_count = {}
+            
+            for character in characters:
+                status = character.get("status")
+                status_count[status] = status_count.get(status, 0) + 1
+                
+            return status_count
+        except requests.exceptions.RequestException as e:
+            print(f"Ошибка при запросе: {e}")
+            return {}
+
+# Пример использования
+client = RickAndMortyClient()
+
+# Получение случайного персонажа
+random_character = client.get_random_character()
+if random_character:
+    print(f"Случайный персонаж: {random_character['name']}")
+
+# Поиск персонажей по имени
+search_name = "Rick"
+characters = client.search_characters(search_name)
+print(f"Персонажи с именем '{search_name}': {[char['name'] for char in characters]}")
+
+# Получение всех локаций
+locations = client.get_all_locations()
+print(f"Всего локаций: {len(locations)}")
+
+# Поиск эпизодов по названию
+episode_name = "Pilot"
+episodes = client.search_episodes(episode_name)
+print(f"Эпизоды с названием '{episode_name}': {[ep['name'] for ep in episodes]}")
+
+# Анализ статуса персонажей
+status_analysis = client.analyze_character_status()
+print(f"Статусы персонажей: {status_analysis}")
